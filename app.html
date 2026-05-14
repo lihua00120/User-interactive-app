@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>黑貓物流 App Demo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#f0ede8;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 0 32px;}
+:root{--or:#E8540A;--orl:#FDF0EA;--tl:#1D9E75;--tll:#E1F5EE;--bl:#185FA5;--bll:#E6F1FB;--am:#BA7517;--aml:#FAEEDA;--bg:#F7F6F3;--bd:#e0ddd8;--t1:#1a1a1a;--t2:#6b6b6b;--t3:#aaa;}
+
+/* material icons */
+.mi{font-family:'Material Symbols Outlined';font-style:normal;line-height:1;display:inline-block;vertical-align:middle;user-select:none;font-size:inherit;}
+.mi.fill{font-variation-settings:'FILL' 1;}
+
+/* player */
+.ctrl{display:flex;align-items:center;gap:10px;width:100%;max-width:390px;margin-bottom:10px;padding:0 2px;}
+.pbtn{width:38px;height:38px;border-radius:50%;background:var(--or);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pbtn .mi{font-size:20px;color:#fff;}
+.tl{flex:1;height:5px;background:#ddd;border-radius:5px;overflow:hidden;cursor:pointer;}
+.tlf{height:100%;background:var(--or);border-radius:5px;width:0%;}
+.slbl{font-size:11px;color:#888;min-width:36px;text-align:right;}
+
+/* phone */
+.phone{width:100%;max-width:390px;background:var(--bg);overflow:hidden;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.15);}
+@media(min-width:440px){.phone{border-radius:36px;height:700px;}}
+@media(max-width:439px){.phone{height:calc(100vh - 120px);min-height:520px;}}
+
+.pinner{position:relative;width:100%;height:100%;}
+.scr{position:absolute;inset:0;opacity:0;transition:opacity .4s ease;pointer-events:none;display:flex;flex-direction:column;background:var(--bg);}
+.scr.on{opacity:1;pointer-events:all;}
+
+/* common */
+.topbar{background:#fff;padding:13px 16px 11px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.navbar{background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:space-around;padding:8px 0 16px;flex-shrink:0;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--t3);}
+.ni.on{color:var(--or);}
+.ni .mi{font-size:22px;}
+.body{flex:1;overflow-y:auto;padding:13px 14px;display:flex;flex-direction:column;gap:10px;}
+.card{background:#fff;border-radius:14px;border:1px solid var(--bd);padding:14px;}
+.pill{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;}
+.pg{background:var(--tll);color:#085041;}.po{background:var(--orl);color:#993C1D;}.pb{background:var(--bll);color:#0C447C;}.pa{background:var(--aml);color:#633806;}
+
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,84,10,.4)}70%{box-shadow:0 0 0 9px rgba(232,84,10,0)}100%{box-shadow:0 0 0 0 rgba(232,84,10,0)}}
+.pr{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--or);animation:pulse 1.8s infinite;flex-shrink:0;}
+
+.sdots{display:flex;align-items:center;gap:3px;margin:12px 0 8px;}
+.sd{width:9px;height:9px;border-radius:50%;}
+.sdd{background:var(--tl);}.sdc{width:13px;height:13px;background:var(--or);box-shadow:0 0 0 3px rgba(232,84,10,.2);display:flex;align-items:center;justify-content:center;border-radius:50%;}.sdf{background:#ddd;}
+.sl{flex:1;height:2px;background:#ddd;}.sld{background:var(--tl);}
+
+.sr{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bd);}
+.sr:last-child{border-bottom:none;}
+.sdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.dn{background:var(--tll);color:#085041;}.dw{background:var(--or);color:#fff;}.dx{background:#f0ede8;color:var(--t3);}
+
+/* tap ripple */
+.tap{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(232,84,10,.15);transform:scale(0);opacity:0;pointer-events:none;transition:transform .4s,opacity .4s;z-index:20;}
+.tap.sh{transform:scale(1);opacity:1;}.tap.hd{transform:scale(1.5);opacity:0;}
+
+/* toast */
+.toast{position:absolute;top:12px;left:10px;right:10px;background:#fff;border-radius:14px;border:1px solid var(--bd);padding:11px 13px;display:flex;gap:10px;align-items:flex-start;transform:translateY(-100px);opacity:0;transition:transform .45s cubic-bezier(.2,.8,.3,1),opacity .45s;z-index:30;box-shadow:0 4px 20px rgba(0,0,0,.1);}
+.toast.sh{transform:translateY(0);opacity:1;}
+
+/* bottom sheet */
+.bs{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:18px 18px 0 0;padding:10px 14px 18px;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.8,.3,1);z-index:10;}
+.bs.sh{transform:translateY(0);}
+.bh{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 14px;}
+.ac{border:1.5px solid var(--bd);border-radius:12px;padding:12px 13px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:all .2s;}
+.ac.sg{border-color:var(--tl);background:var(--tll);}
+.ai{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ai .mi{font-size:22px;}
+
+/* step dots */
+.dots{display:flex;gap:7px;justify-content:center;margin-top:10px;}
+.di{width:7px;height:7px;border-radius:50%;background:#ccc;transition:background .3s,transform .3s;}
+.di.on{background:var(--or);transform:scale(1.3);}
+
+/* caption */
+.cap{font-size:12px;color:#888;margin-top:7px;text-align:center;min-height:18px;letter-spacing:.2px;}
+
+/* send steps */
+.sendstep{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;position:relative;}
+.sendstep::before{content:'';position:absolute;top:24px;left:14px;right:14px;height:2px;background:#ddd;z-index:0;}
+.ssp{display:flex;flex-direction:column;align-items:center;gap:4px;z-index:1;}
+.sspdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.sspdot.don{background:var(--tll);color:#085041;border:2px solid var(--tl);}.sspdot.now{background:var(--or);color:#fff;}.sspdot.fut{background:#fff;color:var(--t3);border:2px solid #ddd;}
+.ssplab{font-size:10px;color:var(--t2);}
+</style>
+</head>
+<body>
+
+<div class="ctrl">
+  <button class="pbtn" id="pbtn"><span class="mi" id="picon">pause</span></button>
+  <div class="tl" id="tl"><div class="tlf" id="tlf"></div></div>
+  <span class="slbl" id="slbl">1 / 7</span>
+</div>
+
+<div class="phone">
+ <div class="pinner">
+  <div class="tap" id="tap"></div>
+  <div class="toast" id="toast">
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--or);margin-top:4px;flex-shrink:0;"></div>
+    <div>
+      <p style="font-size:12px;font-weight:700;color:var(--t1);">黑貓物流 — 快到了，請確認！</p>
+      <p style="font-size:11px;color:var(--t2);margin-top:2px;">距離您還有 3 站，請確認是否在家</p>
+    </div>
+  </div>
+
+  <!-- S1 配送追蹤 -->
+  <div class="scr on" id="s0">
+    <div class="topbar" style="display:flex;justify-content:space-between;align-items:center;">
+      <div><p style="font-size:16px;font-weight:700;color:var(--t1);">配送追蹤</p><p style="font-size:11px;color:var(--t2);">TC-20250514-2847</p></div>
+      <span style="background:var(--orl);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;position:relative;">
+        <span class="mi" style="font-size:20px;color:var(--or);">notifications</span>
+        <span style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--or);border-radius:50%;border:1.5px solid #fff;"></span>
+      </span>
+    </div>
+    <div class="body">
+      <div class="card" style="text-align:center;padding:20px 14px;">
+        <p style="font-size:12px;color:var(--t2);margin-bottom:6px;">預計送達時間</p>
+        <div style="font-size:50px;font-weight:700;color:var(--or);line-height:1;">8<span style="font-size:22px;color:var(--t2);font-weight:400;"> 分鐘</span></div>
+        <p style="font-size:11px;color:var(--t2);margin:7px 0 0;">大約 14:23 前後</p>
+        <div class="sdots">
+          <div class="sd sdd"></div><div class="sl sld"></div><div class="sd sdd"></div><div class="sl sld"></div>
+          <div class="sd sdd"></div><div class="sl sld"></div><div class="sd sdd"></div><div class="sl sld"></div>
+          <div class="sd sdc"><span class="mi" style="font-size:8px;color:#fff;">local_shipping</span></div>
+          <div class="sl"></div><div class="sd sdf"></div><div class="sl"></div><div class="sd sdf"></div>
+          <div class="sl"></div><div class="sd sdf" style="background:var(--or);opacity:.25;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:10px;color:var(--t2);">已出發</span><span style="font-size:12px;font-weight:700;color:var(--or);">剩餘 3 站</span><span style="font-size:10px;color:var(--t2);">您家</span></div>
+        <div style="margin-top:13px;background:var(--orl);border-radius:9px;padding:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span class="pr"></span><p style="font-size:12px;color:#993C1D;">快到了！司機正在附近配送</p>
+        </div>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;margin-bottom:7px;color:var(--t1);">配送進度</p>
+        <div class="sr"><div class="sdot dn"><span class="mi" style="font-size:14px;">check</span></div><div><p style="font-size:13px;color:var(--t1);">包裹已取件</p><p style="font-size:11px;color:var(--t2);">09:30</p></div></div>
+        <div class="sr"><div class="sdot dn"><span class="mi" style="font-size:14px;">check</span></div><div><p style="font-size:13px;color:var(--t1);">配送中</p><p style="font-size:11px;color:var(--t2);">13:45</p></div></div>
+        <div class="sr"><div class="sdot dw"><span class="mi" style="font-size:14px;">local_shipping</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:700;color:var(--or);">即將抵達</p><p style="font-size:11px;color:var(--t2);">進行中</p></div><span class="pill po">進行中</span></div>
+        <div class="sr"><div class="sdot dx"><span class="mi" style="font-size:14px;">home</span></div><div><p style="font-size:13px;color:var(--t2);">送達您家</p><p style="font-size:11px;color:var(--t3);">預計 14:23</p></div></div>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="ni on"><span class="mi">location_on</span><span>追蹤</span></div>
+      <div class="ni"><span class="mi">send</span><span>寄件</span></div>
+      <div class="ni"><span class="mi">history</span><span>歷史</span></div>
+      <div class="ni"><span class="mi">headset_mic</span><span>客服</span></div>
+      <div class="ni"><span class="mi">person</span><span>我的</span></div>
+    </div>
+  </div>
+
+  <!-- S2 推播通知 -->
+  <div class="scr" id="s1">
+    <div class="topbar" style="display:flex;justify-content:space-between;align-items:center;">
+      <div><p style="font-size:16px;font-weight:700;color:var(--t1);">配送追蹤</p><p style="font-size:11px;color:var(--t2);">TC-20250514-2847</p></div>
+      <span style="background:var(--orl);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
+        <span class="mi" style="font-size:20px;color:var(--or);">notifications</span>
+      </span>
+    </div>
+    <div class="body">
+      <div class="card" style="text-align:center;padding:20px 14px;">
+        <p style="font-size:12px;color:var(--t2);margin-bottom:6px;">預計送達時間</p>
+        <div style="font-size:50px;font-weight:700;color:var(--or);line-height:1;">8<span style="font-size:22px;color:var(--t2);font-weight:400;"> 分鐘</span></div>
+        <p style="font-size:11px;color:var(--t2);margin:7px 0 0;">大約 14:23 前後</p>
+        <div class="sdots">
+          <div class="sd sdd"></div><div class="sl sld"></div><div class="sd sdd"></div><div class="sl sld"></div>
+          <div class="sd sdd"></div><div class="sl sld"></div><div class="sd sdd"></div><div class="sl sld"></div>
+          <div class="sd sdc"><span class="mi" style="font-size:8px;color:#fff;">local_shipping</span></div>
+          <div class="sl"></div><div class="sd sdf"></div><div class="sl"></div><div class="sd sdf"></div>
+          <div class="sl"></div><div class="sd sdf" style="background:var(--or);opacity:.25;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:10px;color:var(--t2);">已出發</span><span style="font-size:12px;font-weight:700;color:var(--or);">剩餘 3 站</span><span style="font-size:10px;color:var(--t2);">您家</span></div>
+        <div style="margin-top:13px;background:var(--orl);border-radius:9px;padding:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span class="pr"></span><p style="font-size:12px;color:#993C1D;">快到了！司機正在附近配送</p>
+        </div>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="ni on"><span class="mi">location_on</span><span>追蹤</span></div>
+      <div class="ni"><span class="mi">send</span><span>寄件</span></div>
+      <div class="ni"><span class="mi">history</span><span>歷史</span></div>
+      <div class="ni"><span class="mi">headset_mic</span><span>客服</span></div>
+      <div class="ni"><span class="mi">person</span><span>我的</span></div>
+    </div>
+  </div>
+
+  <!-- S3 互動彈窗 -->
+  <div class="scr" id="s2">
+    <div style="flex:1;background:rgba(0,0,0,.32);"></div>
+    <div class="bs sh">
+      <div class="bh"></div>
+      <div style="text-align:center;margin-bottom:13px;">
+        <div style="display:inline-flex;align-items:center;gap:7px;background:var(--orl);padding:8px 16px;border-radius:20px;"><span class="pr"></span><span style="font-size:12px;font-weight:700;color:#993C1D;">距離您還有 3 站！</span></div>
+        <p style="font-size:14px;font-weight:700;margin:10px 0 4px;color:var(--t1);">司機快到了，請確認您目前狀態</p>
+        <p style="font-size:12px;color:var(--t2);">選擇後系統立即通知司機，免去電話確認</p>
+      </div>
+      <div class="ac"><div class="ai" style="background:var(--tll);"><span class="mi" style="color:var(--tl);">home</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:600;color:var(--t1);">我在家，請送來</p><p style="font-size:11px;color:var(--t2);">司機直接配送，最快到達</p></div><span class="mi" style="font-size:20px;color:#ccc;">radio_button_unchecked</span></div>
+      <div class="ac"><div class="ai" style="background:var(--bll);"><span class="mi" style="color:var(--bl);">storefront</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:600;color:var(--t1);">我不在家，宅轉門市</p><p style="font-size:11px;color:var(--t2);">選擇附近超商取件</p></div><span class="mi" style="font-size:20px;color:#ccc;">radio_button_unchecked</span></div>
+      <div class="ac"><div class="ai" style="background:var(--aml);"><span class="mi" style="color:var(--am);">calendar_month</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:600;color:var(--t1);">我不在家，改約時間</p><p style="font-size:11px;color:var(--t2);">重新預約，完全不用擔心</p></div><span class="mi" style="font-size:20px;color:#ccc;">radio_button_unchecked</span></div>
+      <button style="width:100%;margin-top:6px;background:var(--or);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;">確認送達安排</button>
+    </div>
+  </div>
+
+  <!-- S4 選「我在家」 -->
+  <div class="scr" id="s3">
+    <div style="flex:1;background:rgba(0,0,0,.32);"></div>
+    <div class="bs sh">
+      <div class="bh"></div>
+      <div style="text-align:center;margin-bottom:13px;">
+        <div style="display:inline-flex;align-items:center;gap:7px;background:var(--orl);padding:8px 16px;border-radius:20px;"><span class="pr"></span><span style="font-size:12px;font-weight:700;color:#993C1D;">距離您還有 3 站！</span></div>
+        <p style="font-size:14px;font-weight:700;margin:10px 0 4px;color:var(--t1);">司機快到了，請確認您目前狀態</p>
+      </div>
+      <div class="ac sg"><div class="ai" style="background:var(--tll);"><span class="mi" style="color:var(--tl);">home</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:600;color:var(--t1);">我在家，請送來</p><p style="font-size:11px;color:var(--t2);">司機直接配送，最快到達</p></div><span class="mi fill" style="font-size:22px;color:var(--tl);">check_circle</span></div>
+      <div class="ac"><div class="ai" style="background:var(--bll);"><span class="mi" style="color:var(--bl);">storefront</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:600;color:var(--t1);">我不在家，宅轉門市</p><p style="font-size:11px;color:var(--t2);">選擇附近超商取件</p></div><span class="mi" style="font-size:20px;color:#ccc;">radio_button_unchecked</span></div>
+      <div class="ac"><div class="ai" style="background:var(--aml);"><span class="mi" style="color:var(--am);">calendar_month</span></div><div style="flex:1;"><p style="font-size:13px;font-weight:600;color:var(--t1);">我不在家，改約時間</p><p style="font-size:11px;color:var(--t2);">重新預約，完全不用擔心</p></div><span class="mi" style="font-size:20px;color:#ccc;">radio_button_unchecked</span></div>
+      <button style="width:100%;margin-top:6px;background:var(--or);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;">確認送達安排</button>
+    </div>
+  </div>
+
+  <!-- S5 寄件表單 -->
+  <div class="scr" id="s4">
+    <div class="topbar">
+      <p style="font-size:16px;font-weight:700;color:var(--t1);">新增寄件</p>
+      <p style="font-size:11px;color:var(--t2);margin-top:2px;">填寫資訊，司機上門取件</p>
+    </div>
+    <div class="body">
+      <div class="card" style="padding:10px 14px;">
+        <div class="sendstep">
+          <div class="ssp"><div class="sspdot don"><span class="mi" style="font-size:14px;">check</span></div><span class="ssplab">寄件者</span></div>
+          <div class="ssp"><div class="sspdot now">2</div><span class="ssplab">收件人</span></div>
+          <div class="ssp"><div class="sspdot fut">3</div><span class="ssplab">包裹</span></div>
+          <div class="ssp"><div class="sspdot fut">4</div><span class="ssplab">確認</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span class="mi" style="font-size:17px;color:var(--or);">person</span>收件人資訊</p>
+        <div style="margin-bottom:10px;"><label style="font-size:11px;color:var(--t2);font-weight:600;">收件人姓名 <span style="color:var(--or);">*</span></label><input style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;font-size:14px;font-family:inherit;color:var(--t1);margin-top:5px;display:block;" type="text" value="林小美"></div>
+        <div style="margin-bottom:10px;"><label style="font-size:11px;color:var(--t2);font-weight:600;">收件人電話 <span style="color:var(--or);">*</span></label><input style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;font-size:14px;font-family:inherit;color:var(--t1);margin-top:5px;display:block;" type="tel" value="0912-345-678"></div>
+        <div><label style="font-size:11px;color:var(--t2);font-weight:600;">收件地址 <span style="color:var(--or);">*</span></label><input style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;font-size:14px;font-family:inherit;color:var(--t1);margin-top:5px;display:block;" type="text" value="台南市東區某路 100 號 3F"></div>
+      </div>
+      <div style="background:var(--orl);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;">
+        <div><p style="font-size:11px;color:#993C1D;">預估運費</p><p style="font-size:26px;font-weight:700;color:var(--or);">NT$ 80</p></div>
+        <p style="font-size:11px;color:#993C1D;text-align:right;">小型包裹<br>台南市同區</p>
+      </div>
+      <button style="width:100%;background:var(--or);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;">下一步：確認寄件資訊</button>
+    </div>
+    <div class="navbar">
+      <div class="ni"><span class="mi">location_on</span><span>追蹤</span></div>
+      <div class="ni on"><span class="mi">send</span><span>寄件</span></div>
+      <div class="ni"><span class="mi">history</span><span>歷史</span></div>
+      <div class="ni"><span class="mi">headset_mic</span><span>客服</span></div>
+      <div class="ni"><span class="mi">person</span><span>我的</span></div>
+    </div>
+  </div>
+
+  <!-- S6 寄件成功 -->
+  <div class="scr" id="s5">
+    <div class="topbar"><p style="font-size:16px;font-weight:700;color:var(--t1);">寄件申請完成</p></div>
+    <div class="body" style="justify-content:center;align-items:center;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--bll);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <span class="mi" style="font-size:44px;color:var(--bl);">send</span>
+      </div>
+      <div><p style="font-size:22px;font-weight:700;color:var(--t1);">寄件申請已送出！</p><p style="font-size:12px;color:var(--t2);margin-top:5px;">取件時間：05/15 09:00–12:00</p></div>
+      <div class="card" style="width:100%;text-align:left;">
+        <p style="font-size:13px;font-weight:700;margin-bottom:6px;">寄件單號</p>
+        <p style="font-size:20px;font-weight:700;color:var(--or);letter-spacing:1px;">TC-20250515-0048</p>
+        <p style="font-size:11px;color:var(--t2);margin-top:4px;">請截圖保存此單號以便查詢</p>
+      </div>
+      <div style="background:var(--bll);border-radius:14px;padding:14px;width:100%;text-align:left;border:1px solid #b5d4f4;">
+        <p style="font-size:12px;font-weight:700;color:#0C447C;margin-bottom:5px;display:flex;align-items:center;gap:6px;"><span class="mi" style="font-size:16px;">notifications</span>取件前您會收到通知</p>
+        <p style="font-size:11px;color:#185FA5;line-height:1.6;">司機抵達前 3 站時，App 將自動推播，請確認包裹已備妥並在家等候。</p>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="ni"><span class="mi">location_on</span><span>追蹤</span></div>
+      <div class="ni on"><span class="mi">send</span><span>寄件</span></div>
+      <div class="ni"><span class="mi">history</span><span>歷史</span></div>
+      <div class="ni"><span class="mi">headset_mic</span><span>客服</span></div>
+      <div class="ni"><span class="mi">person</span><span>我的</span></div>
+    </div>
+  </div>
+
+  <!-- S7 配送完成 -->
+  <div class="scr" id="s6">
+    <div class="topbar"><p style="font-size:16px;font-weight:700;color:var(--t1);">配送完成</p></div>
+    <div class="body" style="justify-content:center;align-items:center;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--tll);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <span class="mi fill" style="font-size:46px;color:var(--tl);">check_circle</span>
+      </div>
+      <div><p style="font-size:23px;font-weight:700;color:var(--t1);">包裹已送達！</p><p style="font-size:12px;color:var(--t2);margin-top:5px;">今天 14:23 · 台南市東區</p></div>
+      <div class="card" style="width:100%;text-align:left;">
+        <p style="font-size:13px;font-weight:700;margin-bottom:8px;">配送摘要</p>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);"><span style="font-size:12px;color:var(--t2);">包裹</span><span style="font-size:12px;">iPhone 保護殼 × 2</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);"><span style="font-size:12px;color:var(--t2);">單號</span><span style="font-size:12px;">TC-20250514-2847</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="font-size:12px;color:var(--t2);">配送方式</span><span style="font-size:12px;">送達本人</span></div>
+      </div>
+      <div class="card" style="width:100%;text-align:left;">
+        <p style="font-size:13px;font-weight:700;margin-bottom:8px;">這次配送體驗如何？</p>
+        <div style="display:flex;gap:6px;justify-content:center;">
+          <span class="mi fill" style="font-size:30px;color:var(--or);">star</span>
+          <span class="mi fill" style="font-size:30px;color:var(--or);">star</span>
+          <span class="mi fill" style="font-size:30px;color:var(--or);">star</span>
+          <span class="mi fill" style="font-size:30px;color:var(--or);">star</span>
+          <span class="mi" style="font-size:30px;color:#ddd;">star</span>
+        </div>
+      </div>
+      <div style="background:var(--orl);border-radius:14px;padding:14px;width:100%;">
+        <p style="font-size:13px;color:#993C1D;line-height:1.6;">感謝您選擇黑貓物流<br>期待下次繼續為您服務 <span class="mi fill" style="font-size:14px;color:#993C1D;">favorite</span></p>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="ni on"><span class="mi">location_on</span><span>追蹤</span></div>
+      <div class="ni"><span class="mi">send</span><span>寄件</span></div>
+      <div class="ni"><span class="mi">history</span><span>歷史</span></div>
+      <div class="ni"><span class="mi">headset_mic</span><span>客服</span></div>
+      <div class="ni"><span class="mi">person</span><span>我的</span></div>
+    </div>
+  </div>
+
+ </div>
+</div>
+
+<div class="dots" id="dots"></div>
+<div class="cap" id="cap">配送追蹤首頁</div>
+
+<script>
+const STEPS=[
+  {id:'s0', label:'配送追蹤首頁', dur:3200},
+  {id:'s1', label:'推播通知出現', dur:3000, toast:true},
+  {id:'s2', label:'互動彈窗彈出', dur:3000, tap:{x:170,y:470}},
+  {id:'s3', label:'選擇「我在家」', dur:2800, tap:{x:170,y:300}},
+  {id:'s4', label:'切換至寄件表單', dur:3500, tap:{x:85,y:570}},
+  {id:'s5', label:'寄件申請送出', dur:3200, tap:{x:170,y:490}},
+  {id:'s6', label:'配送完成', dur:3500}
+];
+
+let cur=0, playing=true, progTimer=null, stepTimer=null, prog=0;
+const pbtn=document.getElementById('pbtn'),picon=document.getElementById('picon'),
+      tlf=document.getElementById('tlf'),slbl=document.getElementById('slbl'),
+      tapEl=document.getElementById('tap'),toastEl=document.getElementById('toast'),
+      dotsEl=document.getElementById('dots'),capEl=document.getElementById('cap');
+
+STEPS.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='di'+(i===0?' on':'');
+  d.id='di'+i;
+  dotsEl.appendChild(d);
+});
+
+function showTap(x,y){
+  tapEl.style.left=(x-26)+'px'; tapEl.style.top=(y-26)+'px';
+  tapEl.className='tap sh';
+  setTimeout(()=>{tapEl.className='tap hd';},400);
+  setTimeout(()=>{tapEl.className='tap';},800);
+}
+
+function showToast(){
+  toastEl.classList.add('sh');
+  setTimeout(()=>toastEl.classList.remove('sh'),2500);
+}
+
+function goTo(i){
+  STEPS.forEach((s,j)=>{
+    document.getElementById(s.id).classList.toggle('on',j===i);
+    document.getElementById('di'+j).classList.toggle('on',j===i);
+  });
+  slbl.textContent=(i+1)+'/'+STEPS.length;
+  capEl.textContent=STEPS[i].label;
+  const s=STEPS[i];
+  if(s.tap) setTimeout(()=>showTap(s.tap.x,s.tap.y),700);
+  if(s.toast) setTimeout(()=>showToast(),500);
+}
+
+function startStep(i){
+  cur=i; goTo(i); prog=0;
+  tlf.style.transition='none'; tlf.style.width='0%';
+  clearInterval(progTimer); clearTimeout(stepTimer);
+  const dur=STEPS[i].dur, iv=50;
+  progTimer=setInterval(()=>{
+    if(!playing) return;
+    prog+=iv/dur*100;
+    tlf.style.transition='width 0.05s linear';
+    tlf.style.width=Math.min(prog,100)+'%';
+    if(prog>=100){
+      clearInterval(progTimer);
+      stepTimer=setTimeout(()=>startStep((i+1)%STEPS.length),100);
+    }
+  },iv);
+}
+
+function togglePlay(){
+  playing=!playing;
+  picon.textContent=playing?'pause':'play_arrow';
+  if(playing) startStep(cur);
+}
+
+pbtn.addEventListener('click',togglePlay);
+document.getElementById('tl').addEventListener('click',e=>{
+  const r=e.currentTarget.getBoundingClientRect();
+  const idx=Math.min(Math.floor((e.clientX-r.left)/r.width*STEPS.length),STEPS.length-1);
+  clearInterval(progTimer); clearTimeout(stepTimer);
+  startStep(idx);
+  if(!playing){playing=true; picon.textContent='pause';}
+});
+
+startStep(0);
+</script>
+</body>
+</html>
